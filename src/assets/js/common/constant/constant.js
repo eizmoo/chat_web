@@ -1,1 +1,2 @@
-export let USER_TOKEN = ''
+export var USER_TOKEN = ''
+

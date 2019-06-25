@@ -10,7 +10,7 @@
         >
           <el-menu-item index="0">
             <i class="el-icon-user-solid"></i>
-            <span>living user</span>
+            <span>user</span>
           </el-menu-item>
           <el-menu-item @click="userClick()" index="2">
             <i class="el-icon-user"></i>
@@ -19,7 +19,7 @@
           <el-menu-item
             v-for="(type, index) in userList"
             :key="index"
-            @click="userClick(type)" index="index + 2">
+            @click="userClick(type)" index="index">
             <i class="el-icon-user"></i>
             <span>{{type}}</span>
           </el-menu-item>
@@ -40,13 +40,13 @@
     <!--输入token弹框-->
     <el-dialog
       title="输入用户名"
-      :visible.sync="!is_token_exist"
-      width="30%"
-      :before-close="handleClose()">
+      :visible="!is_token_exist"
+      width="30%">
+      <!--      :before-close="handleClose()">-->
       <el-row>
-        <el-col :span="5">请输入昵称：</el-col>
+        <el-col :span="5" style="line-height: 40px;">请输入昵称：</el-col>
         <el-col :span="15">
-<!--          <el-input v-model="input" placeholder="昵称，例如tom">{{USER_TOKEN}}</el-input>-->
+          <el-input v-model="USER_TOKEN" placeholder="昵称，例如tom"></el-input>
         </el-col>
         <el-col :span="4">
           <el-button type="primary" @click="handleClose()">确定</el-button>
@@ -58,18 +58,18 @@
 </template>
 
 <script>
-  import {getWebSocket} from "../assets/js/common/webpack/WebPack.js"
+  import {getWebSocket} from "../assets/js/common/webpack/WebPack"
   import {getUserListHttp} from "../assets/js/common/axios-utils/api"
-  import {USER_TOKEN} from "../assets/js/common/constant/constant"
   import {generateUUID} from "../assets/js/common/util"
 
   export default {
     name: "ChatRoom",
     data() {
       return {
+        USER_TOKEN: null,
         websocket: null,
         userList: [],
-        is_token_exist: false
+        is_token_exist: this.checkToken()
       }
     },
     methods: {
@@ -77,32 +77,40 @@
         console.log('click' + token)
       },
       getUserList(queryGroup, groupToken) {
-        getUserListHttp(queryGroup, groupToken).then(result => {
-          this.userList = result.data
-          console.log(this.userList)
-        }).catch(function (reason) {
-          console.log('catch ex:' + reason)
-        })
+        if (this.is_token_exist) {
+          if (queryGroup == null) {
+            queryGroup = 0
+          }
+          getUserListHttp(queryGroup, groupToken).then(result => {
+            this.userList = result.data
+            console.log(this.userList)
+          }).catch(function (reason) {
+            console.log('catch ex:' + reason)
+          });
+        }
       },
       checkToken() {
-        if (USER_TOKEN == null) {
-          this.is_token_exist = false
-        }
+        return this.USER_TOKEN != null
       },
       handleClose() {
-        console.log(USER_TOKEN)
-        if (USER_TOKEN == null) {
-          USER_TOKEN = generateUUID(10)
+        console.log(this.USER_TOKEN)
+        if (this.USER_TOKEN == null) {
+          this.USER_TOKEN = generateUUID(10)
         } else {
-          USER_TOKEN = USER_TOKEN + '_' + generateUUID(6)
+          this.USER_TOKEN = this.USER_TOKEN + '_' + generateUUID(6)
         }
-        this.websocket = getWebSocket()
+        this.websocket = getWebSocket(this.USER_TOKEN)
+        this.is_token_exist = true
+        this.getUserList(0, null)
       }
     },
     mounted() {
-      if (this.websocket != null) {
-        this.getUserList(0, null)
-      }
+      setInterval(this.getUserList, 300000);
+      window.onbeforeunload = e => {
+        if (this.websocket != null) {
+          this.websocket.close()
+        }
+      };
     }
   }
 </script>

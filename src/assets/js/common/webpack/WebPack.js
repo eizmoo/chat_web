@@ -5,11 +5,11 @@
  * 1、WebSocket客户端通过回调函数来接收服务端消息。例如：webSocket.onmessage
  * 2、WebSocket客户端通过send方法来发送消息给服务端。例如：webSocket.send();
  */
-function getWebSocket() {
+function getWebSocket(user_token) {
   /**
    * WebSocket客户端 PS：URL开头表示WebSocket协议 中间是域名端口 结尾是服务端映射地址
    */
-  var webSocket = new WebSocket(/*[[${webSocketUrl}]]*/ 'ws://localhost:10000/chat/chatSocket/tom_uka91f');
+  var webSocket = new WebSocket(/*[[${webSocketUrl}]]*/ 'ws://localhost:10000/chat/chatSocket/' + user_token);
   /**
    * 当服务端打开连接
    */
