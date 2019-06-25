@@ -8,31 +8,49 @@
         <el-menu
           class="el-menu-vertical"
         >
-          <el-menu-item index="0">
+          <el-menu-item @click="this.current_char_user == null">
             <i class="el-icon-user-solid"></i>
             <span>user</span>
-          </el-menu-item>
-          <el-menu-item @click="userClick()" index="2">
-            <i class="el-icon-user"></i>
-            <span>用户一</span>
           </el-menu-item>
           <el-menu-item
             v-for="(type, index) in userList"
             :key="index"
-            @click="userClick(type)" index="index">
+            @click="userClick(type)">
             <i class="el-icon-user"></i>
             <span>{{type}}</span>
           </el-menu-item>
         </el-menu>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="12" v-if="this.current_char_user!=null">
         <h4>
-          <i class="el-icon-user"></i>
-          <span>用户一</span>
+          <i v-if="this.current_char_user != null" class="el-icon-user"></i>
+          <span>{{current_char_user}}</span>
         </h4>
-        <el-row>
-          <el-col :span="2"><i class="el-icon-user"></i></el-col>
-          <el-col :span="20" style="text-align: left">聊天内容</el-col>
+        <el-row style="height: 300px">
+          <el-row>
+            <el-row style="font-size: 9px;text-align: left">
+              {{current_char_user}}
+            </el-row>
+            <div style="text-align: left; margin-bottom: 5px">
+              在吗
+            </div>
+          </el-row>
+          <el-row>
+            <el-row style="font-size: 9px;text-align: right">
+              {{user_token}}
+            </el-row>
+            <div style="text-align: right; margin-bottom: 5px">
+              不在，滚啊
+            </div>
+          </el-row>
+        </el-row>
+        <el-row style="height: 40px">
+          <el-col :span="20">
+            <el-input v-model="input" placeholder="请输入聊天内容"></el-input>
+          </el-col>
+          <el-col :span="4">
+            <el-button plain>发送</el-button>
+          </el-col>
         </el-row>
       </el-col>
     </el-row>
@@ -46,14 +64,13 @@
       <el-row>
         <el-col :span="5" style="line-height: 40px;">请输入昵称：</el-col>
         <el-col :span="15">
-          <el-input v-model="USER_TOKEN" placeholder="昵称，例如tom"></el-input>
+          <el-input v-model="user_token" placeholder="昵称，例如tom"></el-input>
         </el-col>
         <el-col :span="4">
           <el-button type="primary" @click="handleClose()">确定</el-button>
         </el-col>
       </el-row>
     </el-dialog>
-
   </div>
 </template>
 
@@ -66,15 +83,17 @@
     name: "ChatRoom",
     data() {
       return {
-        USER_TOKEN: null,
+        user_token: null,
         websocket: null,
         userList: [],
-        is_token_exist: this.checkToken()
+        is_token_exist: this.checkToken(),
+        current_char_user: null,
+        input: '',
       }
     },
     methods: {
       userClick(token) {
-        console.log('click' + token)
+        this.current_char_user = token
       },
       getUserList(queryGroup, groupToken) {
         if (this.is_token_exist) {
@@ -90,16 +109,16 @@
         }
       },
       checkToken() {
-        return this.USER_TOKEN != null
+        return this.user_token != null
       },
       handleClose() {
-        console.log(this.USER_TOKEN)
-        if (this.USER_TOKEN == null) {
-          this.USER_TOKEN = generateUUID(10)
+        console.log(this.user_token)
+        if (this.user_token == null) {
+          this.user_token = generateUUID(10)
         } else {
-          this.USER_TOKEN = this.USER_TOKEN + '_' + generateUUID(6)
+          this.user_token = this.user_token + '_' + generateUUID(6)
         }
-        this.websocket = getWebSocket(this.USER_TOKEN)
+        this.websocket = getWebSocket(this.user_token)
         this.is_token_exist = true
         this.getUserList(0, null)
       }
@@ -117,6 +136,6 @@
 <style scoped>
   .el-menu-vertical:not(.el-menu--collapse) {
     width: 300px;
-    /*min-height: 400px;*/
+    min-height: 650px;
   }
 </style>
