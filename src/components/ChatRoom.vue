@@ -46,10 +46,10 @@
         </el-row>
         <el-row style="height: 40px">
           <el-col :span="20">
-            <el-input v-model="input" placeholder="请输入聊天内容"></el-input>
+            <el-input v-model="inputMessage" placeholder="请输入聊天内容"></el-input>
           </el-col>
           <el-col :span="4">
-            <el-button plain>发送</el-button>
+            <el-button plain @click="sendMessage()">发送</el-button>
           </el-col>
         </el-row>
       </el-col>
@@ -76,7 +76,7 @@
 
 <script>
   import {getWebSocket} from "../assets/js/common/webpack/WebPack"
-  import {getUserListHttp} from "../assets/js/common/axios-utils/api"
+  import {getUserListHttp, sendMessageHttp} from "../assets/js/common/axios-utils/api"
   import {generateUUID} from "../assets/js/common/util"
 
   export default {
@@ -88,7 +88,7 @@
         userList: [],
         is_token_exist: this.checkToken(),
         current_char_user: null,
-        input: '',
+        inputMessage: '',
       }
     },
     methods: {
@@ -119,8 +119,17 @@
           this.user_token = this.user_token + '_' + generateUUID(6)
         }
         this.websocket = getWebSocket(this.user_token)
+        this.websocket.onmessage = this.showMessage
         this.is_token_exist = true
         this.getUserList(0, null)
+      },
+      sendMessage() {
+        sendMessageHttp(this.user_token, this.current_char_user, this.inputMessage, 1).then(result => {
+          console.log(result)
+        })
+      },
+      showMessage(e) {
+
       }
     },
     mounted() {
